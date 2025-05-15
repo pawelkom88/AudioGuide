@@ -4,6 +4,7 @@ import {useState, useEffect, useCallback, useRef} from "react"
 import type {SpeechVoice} from "@/types/speech"
 import {debounce} from "@/utils/debounce"
 import {Language, supportedLanguagesConfig} from "@/contexts/language-context";
+import {useToast} from "@/hooks/use-toast";
 
 interface SpeechOptions {
     onEnd?: () => void
@@ -26,6 +27,7 @@ const localStorageKeys = {
 // - add more HQ voices - male and female
 // - make sure that when a voice is selected is restart narration with new voice
 
+
 const getLanguageFromVoice = (voiceLang: SpeechVoice["lang"]): Language => {
     const lang = voiceLang.split("-")[0].toLowerCase();
     if (lang === supportedLanguagesConfig.pl.value) {
@@ -37,6 +39,7 @@ const getLanguageFromVoice = (voiceLang: SpeechVoice["lang"]): Language => {
 }
 
 export function useSpeech() {
+    const {toast} = useToast()
     const [voices, setVoices] = useState<SpeechVoice[]>([])
     const [isSpeaking, setIsSpeaking] = useState(false)
     const [selectedVoice, setSelectedVoice] = useState<string>("")
@@ -60,7 +63,11 @@ export function useSpeech() {
                     setSpeechRate(settings.rate)
                 }
             } catch (error) {
-                console.error("Error loading speech settings:", error)
+                toast({
+                    title: "Error loading speech settings",
+                    description: "Please reload the page",
+                    variant: "destructive",
+                })
             }
             initializedRef.current = true
         }
@@ -85,11 +92,9 @@ export function useSpeech() {
                     const langCode = userLang.split("-")[0]
                     const matchingVoice = mappedVoices.find((v) => v.lang.startsWith(langCode)) || mappedVoices[0]
                     setSelectedVoice(matchingVoice.voiceURI)
-console.log(matchingVoice, "matchingVoice")
                     // Set initial narration language based on the voice
                     if (matchingVoice) {
                         const voiceLang = matchingVoice.lang.split("-")[0].toLowerCase()
-                        console.log(voiceLang, "voiceLang")
                         if (voiceLang === "pl" || voiceLang === "de") {
                             setNarrationLanguage(voiceLang as "pl" | "de")
                         } else {
@@ -99,36 +104,6 @@ console.log(matchingVoice, "matchingVoice")
                 }
             }
         }
-
-        // const loadVoices = () => {
-        //   const availableVoices = window.speechSynthesis.getVoices();
-        //   console.log("Available voices:", availableVoices);
-        //
-        //   // Group voices by language
-        //   const voicesByLang: { [lang: string]: SpeechSynthesisVoice[] } = {};
-        //   availableVoices.forEach((voice) => {
-        //     const lang = voice.lang.split('-')[0]; // e.g., 'en-US' -> 'en'
-        //     if (!voicesByLang[lang]) voicesByLang[lang] = [];
-        //     voicesByLang[lang].push(voice);
-        //   });
-        //
-        //   // Pick one "best" voice per language
-        //   const primaryVoices = Object.values(voicesByLang).map((voices) => {
-        //     // Prefer Google voices
-        //     const googleVoice = voices.find(v => v.name.toLowerCase().includes("google"));
-        //     return googleVoice || voices[0];
-        //   });
-        //
-        //   const mappedVoices = primaryVoices.map((voice) => ({
-        //     voiceURI: voice.voiceURI,
-        //     name: voice.name,
-        //     lang: voice.lang,
-        //     localService: voice.localService,
-        //     default: voice.default,
-        //   }));
-        //
-        //   setVoices(mappedVoices);
-        // };
 
         // Chrome loads voices asynchronously
         if (window.speechSynthesis.onvoiceschanged !== undefined) {

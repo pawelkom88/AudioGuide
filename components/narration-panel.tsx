@@ -55,7 +55,7 @@ export function NarrationPanel({
             {/*<p className="text-muted-foreground line-clamp-2 mt-1 text-base">{getLocalizedDescription()}</p>*/}
           </div>
 
-          <div className="flex items-center justify-between p-2">
+          <div className="flex items-center justify-between p-4 pt-2">
             <div className="w-16 flex justify-center">
               <Button
                 variant="outline"
