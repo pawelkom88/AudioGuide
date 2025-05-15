@@ -47,9 +47,9 @@ export function NarrationPanel({
   }
 // todo: make sheet so it hided but still plays ? reveal a little bit so it can be slide up ?
   return (
-      <Card>
+      <Card >
         <CardContent className="p-0">
-          <div className="p-4 pb-2 rounded-t-xl">
+          <div className="p-4 pb-2">
              {/*truncate long names*/}
             <h2 className="text-3xl font-bold">{getLocalizedTitle()}</h2>
             {/*<p className="text-muted-foreground line-clamp-2 mt-1 text-base">{getLocalizedDescription()}</p>*/}

@@ -1,0 +1,45 @@
+# General Code Style & Formatting
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Use functional and declarative programming patterns
+
+# Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+-
+- Favor named exports for components.
+
+# TypeScript Best Practices
+- Use TypeScript for all code.
+- Avoid any and enums; use explicit types and maps instead.
+- Use functional components with TypeScript interfaces for props.
+- Always declare the type of each variable and function (parameters and return value).
+
+# Syntax & Formatting
+- Use the function keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+- One export per file.
+
+# Functions & Logic
+- Keep functions short and single-purpose (<20 lines).
+- Avoid deeply nested blocks by:
+- Using early returns.
+- Extracting logic into utility functions.
+- Use higher-order functions (map, filter, reduce) to simplify logic.
+- Use arrow functions for simple cases (<3 instructions), named functions otherwise.
+- Use default parameter values instead of null/undefined checks.
+- Use RO-RO (Receive Object, Return Object) for passing and returning multiple parameters.
+
+# Data Handling
+- Avoid excessive use of primitive types; encapsulate data in composite types.
+- Prefer immutability for data:
+- Use readonly for immutable properties.
+- Use as const for literals that never change.
+
+# Accessibility
+- Prefer semantic HTML semantics over ARIA. Always use <button>, <a>, <main>, <nav>, <header>, <footer>, <section>, <article> before adding ARIA roles.
+- Define ARIA landmarks with visible labels. Wrap page regions in semantic or ARIA landmark elements (e.g., <main>, role='banner', role='navigation') with aria-labelledby or aria-label.
+- Keyboard operability. All interactions must work via keyboard
+- Provide meaningful alt text for <img>, aria-label/aria-labelledby for icons, and aria-describedby for form help text.
+- Use aria-hidden to hide elements from screen readers.
+- Annotate status updates, alerts, or dynamic changes with aria-live='polite'. Notifies assistive tech when content changes without focus shift

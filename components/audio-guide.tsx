@@ -10,7 +10,6 @@ import {useProximity} from "@/hooks/use-proximity"
 import {useSpeech} from "@/hooks/use-speech"
 import {useToast} from "@/hooks/use-toast"
 import {useMobile} from "@/hooks/use-mobile"
-import {Sheet, SheetContent, SheetTitle, SheetTrigger} from "@/components/ui/sheet"
 import {Settings} from "@/components/settings"
 import {Button} from "@/components/ui/button"
 import {Menu, Locate} from "lucide-react"
@@ -264,14 +263,13 @@ export function AudioGuide() {
 
     return (
         <div className="relative flex flex-col h-screen w-full overflow-hidden">
-            <TopBar
-                status={status}
-                settingsMenu={
-
+            {/*<TopBar*/}
+            {/*    status={status}*/}
+            {/*    settingsMenu={*/}
                     <Drawer>
-                        <DrawerTrigger>
+                        <DrawerTrigger className="h-10 w-10 rounded-full absolute bottom-36 right-4 z-10 bg-primary text-white flex items-center justify-center">
                             <Menu className="h-5 w-5"/>
-                            <span className="sr-only">Menu</span>
+                            <span className="sr-only">Open Setting Menu</span>
                         </DrawerTrigger>
                         <DrawerContent>
                             <DrawerTitle className="sr-only"></DrawerTitle>
@@ -300,8 +298,8 @@ export function AudioGuide() {
                             </DrawerFooter>
                         </DrawerContent>
                     </Drawer>
-                }
-            />
+            {/*    }*/}
+            {/*/>*/}
 
             <div className="flex-1 relative">
                 <MapPlaceholder
@@ -318,7 +316,7 @@ export function AudioGuide() {
                 />
 
                 <Button
-                    className="absolute bottom-4 right-4 rounded-full shadow-lg z-10"
+                    className="absolute bottom-5 left-4 rounded-full shadow-lg z-10"
                     onClick={() => {
                         toast({
                             title: t("map.centered"),

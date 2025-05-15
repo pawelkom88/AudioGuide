@@ -33,9 +33,9 @@ export function TopBar({ status, settingsMenu }: TopBarProps) {
   return (
     <div className="flex items-center justify-between p-3 bg-background/80 backdrop-blur-sm z-10">
       <div className="flex items-center">{settingsMenu}</div>
-      <Badge variant="secondary" className="px-4 py-1.5 bg-gray-900 text-white rounded-md">
-        {getStatusText()}
-      </Badge>
+      {/*<Badge variant="secondary" className="px-4 py-1.5 bg-gray-900 text-white rounded-md">*/}
+      {/*  {getStatusText()}*/}
+      {/*</Badge>*/}
     </div>
   )
 }
