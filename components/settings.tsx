@@ -7,8 +7,8 @@ import {Slider} from "@/components/ui/slider"
 import {Separator} from "@/components/ui/separator"
 import {Badge} from "@/components/ui/badge"
 import type {SpeechVoice} from "@/types/speech"
-import {Language, supportedLanguagesConfig, useLanguage} from "@/contexts/language-context"
 import {translate} from "@/utils/translations"
+import {Language, supportedLanguagesConfig, useLanguage} from "@/providers/providers";
 
 interface SettingsProps {
     isEnabled: boolean

@@ -14,7 +14,6 @@ import {Button} from "@/components/ui/button"
 import {Menu, Locate} from "lucide-react"
 import type {POI} from "@/types/poi"
 import {samplePOIs} from "@/data/sample-pois"
-import {useLanguage} from "@/contexts/language-context"
 import {translate} from "@/utils/translations"
 import {
     Drawer,
@@ -23,6 +22,7 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer"
+import {useLanguage} from "@/providers/providers";
 // For demo purposes, let's add a function to simulate location changes
 // const simulateLocationChange = (currentLocation: { latitude: number; longitude: number } | null, poiIndex: number) => {
 //     if (!currentLocation) return null
@@ -285,7 +285,11 @@ export function AudioGuide() {
 
             <div className="flex-1 relative">
                 <MapPlaceholder
-                    userLocation={location}
+                    userLocation={{
+                        lat: 51.481583,
+                        lng: -3.179090
+                    }}
+                    // userLocation={location}
                     pois={pois}
                     activePoi={activePoi}
                     onRecenter={() => {

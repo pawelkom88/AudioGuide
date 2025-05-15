@@ -3,8 +3,8 @@
 import {useState, useEffect, useCallback, useRef} from "react"
 import type {SpeechVoice} from "@/types/speech"
 import {debounce} from "@/utils/debounce"
-import {Language, supportedLanguagesConfig} from "@/contexts/language-context";
 import {useToast} from "@/hooks/use-toast";
+import {Language, supportedLanguagesConfig} from "@/providers/providers";
 
 interface SpeechOptions {
     onEnd?: () => void

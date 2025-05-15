@@ -6,8 +6,8 @@ import { X, Play, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { POI } from "@/types/poi"
-import { useLanguage } from "@/contexts/language-context"
 import { translate } from "@/utils/translations"
+import {useLanguage} from "@/providers/providers";
 
 interface POINotificationProps {
   poi: POI | null
@@ -15,6 +15,9 @@ interface POINotificationProps {
   onDismiss: () => void
   narrationLanguage: "en" | "pl" | "de"
 }
+
+// TODO:
+// - make sure it is a drawer that slides up after clicking on a POI
 
 export function POINotification({ poi, onPlay, onDismiss, narrationLanguage }: POINotificationProps) {
   const { language } = useLanguage()

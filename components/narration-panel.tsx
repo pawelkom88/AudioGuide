@@ -4,9 +4,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Pause, Play } from "lucide-react"
 import type { POI } from "@/types/poi"
-import { useLanguage } from "@/contexts/language-context"
 import { translate } from "@/utils/translations"
-import Link from "next/link";
+import {useLanguage} from "@/providers/providers";
 
 interface NarrationPanelProps {
   poi: POI
