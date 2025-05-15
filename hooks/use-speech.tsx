@@ -38,6 +38,34 @@ const getLanguageFromVoice = (voiceLang: SpeechVoice["lang"]): Language => {
     return supportedLanguagesConfig.en.value;
 }
 
+const setNarrationLanguageFromVoice = (voice: SpeechVoice, setNarrationLanguage: (lang: Language) => void) => {
+    if (!voice) {
+        return;
+    }
+
+    const voiceLang = voice.lang.split("-")[0].toLowerCase();
+
+    switch (voiceLang) {
+        case supportedLanguagesConfig.pl.value:
+        case supportedLanguagesConfig.de.value:
+            setNarrationLanguage(voiceLang as "pl" | "de");
+            break;
+        default:
+            setNarrationLanguage(supportedLanguagesConfig.en.value);
+    }
+};
+
+
+const mapVoices = (availableVoices: SpeechSynthesisVoice[]) => {
+    return availableVoices.map((voice) => ({
+        voiceURI: voice.voiceURI,
+        name: voice.name,
+        lang: voice.lang,
+        isDefault: voice.default,
+        isLocalService: voice.localService,
+    }))
+}
+
 export function useSpeech() {
     const {toast} = useToast()
     const [voices, setVoices] = useState<SpeechVoice[]>([])
@@ -72,38 +100,60 @@ export function useSpeech() {
             initializedRef.current = true
         }
 
+        // const loadVoices = () => {
+        //     const availableVoices = window.speechSynthesis.getVoices()
+        //
+        //     if (availableVoices.length > 0) {
+        //         const mappedVoices = mapVoices(availableVoices)
+        //         setVoices(mappedVoices)
+        //         voicesLoadedRef.current = true
+        //
+        //         // Set default voice if none is selected
+        //         if (!selectedVoice && mappedVoices.length > 0) {
+        //             const userLang = navigator.language || "en-UK"
+        //             const langCode = userLang.split("-")[0]
+        //             const matchingVoice = mappedVoices.find((v) => v.lang.startsWith(langCode)) || mappedVoices[0]
+        //             setSelectedVoice(matchingVoice.voiceURI)
+        //             // Set initial narration language based on the voice
+        //             if (matchingVoice) {
+        //                 const voiceLang = matchingVoice.lang.split("-")[0].toLowerCase()
+        //                 if (voiceLang === supportedLanguagesConfig.pl.value || voiceLang === supportedLanguagesConfig.de.value) {
+        //                     setNarrationLanguage(voiceLang as "pl" | "de")
+        //                 } else {
+        //                     setNarrationLanguage(supportedLanguagesConfig.en.value)
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         const loadVoices = () => {
-            const availableVoices = window.speechSynthesis.getVoices()
+            const availableVoices = window.speechSynthesis.getVoices();
 
-            if (availableVoices.length > 0) {
-                const mappedVoices = availableVoices.map((voice) => ({
-                    voiceURI: voice.voiceURI,
-                    name: voice.name,
-                    lang: voice.lang,
-                    isDefault: voice.default,
-                    isLocalService: voice.localService,
-                }))
-                setVoices(mappedVoices)
-                voicesLoadedRef.current = true
-
-                // Set default voice if none is selected
-                if (!selectedVoice && mappedVoices.length > 0) {
-                    const userLang = navigator.language || "en-UK"
-                    const langCode = userLang.split("-")[0]
-                    const matchingVoice = mappedVoices.find((v) => v.lang.startsWith(langCode)) || mappedVoices[0]
-                    setSelectedVoice(matchingVoice.voiceURI)
-                    // Set initial narration language based on the voice
-                    if (matchingVoice) {
-                        const voiceLang = matchingVoice.lang.split("-")[0].toLowerCase()
-                        if (voiceLang === "pl" || voiceLang === "de") {
-                            setNarrationLanguage(voiceLang as "pl" | "de")
-                        } else {
-                            setNarrationLanguage("en")
-                        }
-                    }
-                }
+            if (availableVoices.length === 0) {
+                return; // Early return if no voices are available
             }
-        }
+
+            const mappedVoices = mapVoices(availableVoices);
+            setVoices(mappedVoices);
+            voicesLoadedRef.current = true;
+
+            // If a voice is already selected or no voices are available, we're done
+            if (selectedVoice || mappedVoices.length === 0) {
+                return;
+            }
+
+            // Select default voice based on user's language
+            const userLang = navigator.language || "en-UK";
+            const langCode = userLang.split("-")[0];
+            const matchingVoice = mappedVoices.find((v) => v.lang.startsWith(langCode)) || mappedVoices[0];
+
+            // Set the selected voice
+            setSelectedVoice(matchingVoice.voiceURI);
+
+            // Set initial narration language based on the voice
+            setNarrationLanguageFromVoice(matchingVoice, setNarrationLanguage);
+        };
 
         // Chrome loads voices asynchronously
         if (window.speechSynthesis.onvoiceschanged !== undefined) {
@@ -120,7 +170,7 @@ export function useSpeech() {
         }
     }, []) // Remove selectedVoice from dependencies
 
-    const selectedVoiceObj: SpeechVoice | undefined = voices.find((v) => v.voiceURI === selectedVoice)
+    // const selectedVoiceObj: SpeechVoice | undefined = voices.find((v) => v.voiceURI === selectedVoice)
 
     const getSelectedVoiceObject = useCallback(() => {
         if (!window.speechSynthesis || !selectedVoice) return null
@@ -155,6 +205,8 @@ export function useSpeech() {
     const handleSpeechRateChange = useCallback((rate: number) => {
         setSpeechRate(rate)
     }, [speechRate])
+
+    // bug - when stop and then resume narration voice changes to english
 
     const startNarration = useCallback(
         (text: string, options: SpeechOptions = {}) => {

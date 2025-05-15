@@ -1,11 +1,11 @@
 "use client"
 
-import {useState, useEffect, useCallback} from "react"
+import {useState, useCallback} from "react"
 import type {POI} from "@/types/poi"
 import type {Coordinates} from "@/types/coordinates"
 import {useLanguage} from "@/contexts/language-context"
 import {translate} from "@/utils/translations"
-import {GoogleMap, useJsApiLoader} from '@react-google-maps/api'
+import {GoogleMap, Marker, useJsApiLoader} from '@react-google-maps/api'
 
 const containerStyle = {
     width: '100%',
@@ -31,15 +31,14 @@ export function MapPlaceholder({userLocation, pois, activePoi, onRecenter, onSel
         id: 'google-map-script',
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     })
-
-    const position = [51.5913, -2.9984];
+    console.log(userLocation, "userLocation")
     const {language} = useLanguage()
 
     const t = (key: string, params?: Record<string, string>) => translate(language, key, params)
 
-    const [map, setMap] = useState(null)
+    const [_, setMap] = useState<google.maps.Map | null>(null)
 
-    const onLoad = useCallback(function callback(map) {
+    const onLoad = useCallback(function callback(map: google.maps.Map) {
         // This is just an example of getting and using the map instance!!! don't just blindly copy!
         const bounds = new window.google.maps.LatLngBounds(center)
         map.fitBounds(bounds)
@@ -54,7 +53,7 @@ export function MapPlaceholder({userLocation, pois, activePoi, onRecenter, onSel
     return isLoaded ? (
         <GoogleMap
             mapContainerStyle={containerStyle}
-            center={center}
+            center={userLocation || center}
             zoom={18}
             onLoad={onLoad}
             onUnmount={onUnmount}
@@ -66,7 +65,18 @@ export function MapPlaceholder({userLocation, pois, activePoi, onRecenter, onSel
                 gestureHandling: "greedy",
             }}
         >
-            {/* Child components, such as markers, info windows, etc. */}
+            {/*// different type of mrke to add icon ?*/}
+            <Marker
+                position={userLocation || center}
+                icon={{
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: "#4285F4",
+                    fillOpacity: 1,
+                    strokeColor: "#FFFFFF",
+                    strokeWeight: 2,
+                }}
+            />
             <></>
         </GoogleMap>
     ) : (

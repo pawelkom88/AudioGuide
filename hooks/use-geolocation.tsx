@@ -37,8 +37,8 @@ export function useGeolocation() {
         setState((prev) => ({
           ...prev,
           location: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
             accuracy: position.coords.accuracy,
           },
         }))
@@ -55,8 +55,8 @@ export function useGeolocation() {
         setState((prev) => ({
           ...prev,
           location: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
             accuracy: position.coords.accuracy,
           },
           isWatching: true,
