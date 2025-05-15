@@ -161,6 +161,12 @@ console.log(matchingVoice, "matchingVoice")
     }, []);
 
     const handleVoiceChange = useCallback((voiceURI: string) => {
+        // Stop any ongoing narration when voice changes
+        if (window.speechSynthesis && isSpeaking) {
+            window.speechSynthesis.cancel()
+            setIsSpeaking(false)
+        }
+
         setSelectedVoice(voiceURI)
         saveSettings(voiceURI, speechRate)
 
@@ -169,7 +175,7 @@ console.log(matchingVoice, "matchingVoice")
             const language = getLanguageFromVoice(newVoice.lang)
             setNarrationLanguage(language)
         }
-    }, [selectedVoiceObj, supportedLanguagesConfig.pl.value, supportedLanguagesConfig.de.value, supportedLanguagesConfig.en.value])
+    }, [voices, speechRate, saveSettings, isSpeaking])
 
     const handleSpeechRateChange = useCallback((rate: number) => {
         setSpeechRate(rate)
