@@ -61,19 +61,13 @@ export function AudioGuide() {
     const [isNarrating, setIsNarrating] = useState(false)
     const [status, setStatus] = useState<"idle" | "listening" | "narrating" | "paused">("listening")
     const [isEnabled, setIsEnabled] = useState(true)
-    const [simulatedLocation, setSimulatedLocation] = useState<{
-        latitude: number
-        longitude: number
-        accuracy: number
-    } | null>(null)
     const lastNarratedPoiRef = useRef<string | null>(null)
     const {language} = useLanguage()
 
     const t = (key: string, params?: Record<string, string>) => translate(language, key, params)
 
     // Use either the real location or the simulated one
-    const {location: realLocation, error: locationError} = useGeolocation()
-    const location = simulatedLocation || realLocation
+    const {location, error: locationError} = useGeolocation()
 
     const {
         startNarration,
@@ -266,7 +260,7 @@ export function AudioGuide() {
             {/*    settingsMenu={*/}
             <Drawer>
                 <DrawerTrigger
-                    className="h-10 w-10 rounded-full absolute bottom-36 right-4 z-10 bg-primary text-white flex items-center justify-center">
+                    className="h-10 w-10 rounded-full absolute bottom-[9.8rem] right-4 z-10 bg-primary text-white flex items-center justify-center">
                     <Menu className="h-5 w-5"/>
                     <span className="sr-only">Open Setting Menu</span>
                 </DrawerTrigger>

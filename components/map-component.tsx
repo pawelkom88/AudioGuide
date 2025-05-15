@@ -44,7 +44,7 @@ export function MapComponent({ userLocation, pois, activePoi }: MapComponentProp
   // Center map on user location when it changes
   useEffect(() => {
     if (map && userLocation) {
-      map.panTo({ lat: userLocation.latitude, lng: userLocation.longitude })
+      map.panTo({ lat: userLocation.lat, lng: userLocation.lng })
     }
   }, [map, userLocation])
 
@@ -57,7 +57,7 @@ export function MapComponent({ userLocation, pois, activePoi }: MapComponentProp
 
   const handleRecenter = () => {
     if (map && userLocation) {
-      map.panTo({ lat: userLocation.latitude, lng: userLocation.longitude })
+      map.panTo({ lat: userLocation.lat, lng: userLocation.lng })
       map.setZoom(defaultZoom)
     }
   }
@@ -74,7 +74,7 @@ export function MapComponent({ userLocation, pois, activePoi }: MapComponentProp
     <>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
-        center={userLocation ? { lat: userLocation.latitude, lng: userLocation.longitude } : defaultCenter}
+        center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : defaultCenter}
         zoom={defaultZoom}
         options={{
           disableDefaultUI: true,
@@ -90,8 +90,8 @@ export function MapComponent({ userLocation, pois, activePoi }: MapComponentProp
           <>
             <Marker
               position={{
-                lat: userLocation.latitude,
-                lng: userLocation.longitude,
+                lat: userLocation.lat,
+                lng: userLocation.lng,
               }}
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
@@ -104,8 +104,8 @@ export function MapComponent({ userLocation, pois, activePoi }: MapComponentProp
             />
             <Circle
               center={{
-                lat: userLocation.latitude,
-                lng: userLocation.longitude,
+                lat: userLocation.lat,
+                lng: userLocation.lng,
               }}
               radius={50}
               options={{

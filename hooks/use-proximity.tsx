@@ -19,7 +19,7 @@ export function useProximity(userLocation: Coordinates | null, pois: POI[], prox
     let closestDistance = Number.POSITIVE_INFINITY
 
     for (const poi of pois) {
-      const distance = calculateDistance(userLocation.latitude, userLocation.longitude, poi.latitude, poi.longitude)
+      const distance = calculateDistance(userLocation.lat, userLocation.lng, poi.latitude, poi.longitude)
 
       if (distance < proximityRadius && distance < closestDistance) {
         closestDistance = distance
