@@ -1,0 +1,356 @@
+"use client"
+
+import {useState, useEffect, useRef} from "react"
+import {MapPlaceholder} from "@/components/map-placeholder"
+import {TopBar} from "@/components/top-bar"
+import {NarrationPanel} from "@/components/narration-panel"
+import {POINotification} from "@/components/poi-notification"
+import {useGeolocation} from "@/hooks/use-geolocation"
+import {useProximity} from "@/hooks/use-proximity"
+import {useSpeech} from "@/hooks/use-speech"
+import {useToast} from "@/hooks/use-toast"
+import {useMobile} from "@/hooks/use-mobile"
+import {Sheet, SheetContent, SheetTitle, SheetTrigger} from "@/components/ui/sheet"
+import {Settings} from "@/components/settings"
+import {Button} from "@/components/ui/button"
+import {Menu, Locate} from "lucide-react"
+import type {POI} from "@/types/poi"
+import {samplePOIs} from "@/data/sample-pois"
+import {useLanguage} from "@/contexts/language-context"
+import {translate} from "@/utils/translations"
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer"
+// For demo purposes, let's add a function to simulate location changes
+const simulateLocationChange = (currentLocation: { latitude: number; longitude: number } | null, poiIndex: number) => {
+    if (!currentLocation) return null
+
+    // Move closer to the POI with the given index
+    const targetPoi = samplePOIs[poiIndex]
+
+    // Calculate a position 40m away from the POI (within the 50m trigger radius)
+    const direction = Math.random() * Math.PI * 2 // Random direction
+    const distance = 0.00036 // Roughly 40 meters in degrees
+
+    return {
+        latitude: targetPoi.latitude + Math.sin(direction) * distance,
+        longitude: targetPoi.longitude + Math.cos(direction) * distance,
+        accuracy: 10,
+    }
+}
+
+export function AudioGuide() {
+    const {toast} = useToast()
+    const isMobile = useMobile()
+    const [pois, setPois] = useState<POI[]>(samplePOIs)
+    const [activePoi, setActivePoi] = useState<POI | null>(samplePOIs[0]) // Default to first POI for demo
+    const [pendingPoi, setPendingPoi] = useState<POI | null>(null)
+    const [isNarrating, setIsNarrating] = useState(false)
+    const [status, setStatus] = useState<"idle" | "listening" | "narrating" | "paused">("listening")
+    const [isEnabled, setIsEnabled] = useState(true)
+    const [simulatedLocation, setSimulatedLocation] = useState<{
+        latitude: number
+        longitude: number
+        accuracy: number
+    } | null>(null)
+    const lastNarratedPoiRef = useRef<string | null>(null)
+    const {language} = useLanguage()
+
+    const t = (key: string, params?: Record<string, string>) => translate(language, key, params)
+
+    // Use either the real location or the simulated one
+    const {location: realLocation, error: locationError} = useGeolocation()
+    const location = simulatedLocation || realLocation
+
+    const {
+        speak,
+        stop,
+        voices,
+        isAvailable,
+        selectedVoice,
+        onVoiceChange,
+        speechRate,
+        onSpeechRateChange,
+        narrationLanguage,
+    } = useSpeech()
+
+    const {nearbyPoi} = useProximity(location, pois, 50)
+
+    // Get the POI description in the correct language
+    const getLocalizedDescription = (poi: POI) => {
+        if (narrationLanguage === "pl" && poi.translations.pl) {
+            return poi.translations.pl.description
+        } else if (narrationLanguage === "de" && poi.translations.de) {
+            return poi.translations.de.description
+        }
+        return poi.description
+    }
+
+    // Handle location errors
+    useEffect(() => {
+        if (locationError) {
+            toast({
+                title: t("errors.location"),
+                description: locationError.message,
+                variant: "destructive",
+            })
+        }
+    }, [locationError, toast, language])
+
+    // Handle speech availability
+    useEffect(() => {
+        if (!isAvailable) {
+            toast({
+                title: t("errors.speech"),
+                description: t("errors.speechDesc"),
+                variant: "destructive",
+            })
+        }
+    }, [isAvailable, toast, language])
+
+    // Handle POI proximity and notification
+    useEffect(() => {
+        if (!isEnabled || !nearbyPoi || !isAvailable) {
+            return
+        }
+
+        // If we're already narrating this POI, do nothing
+        if (nearbyPoi.id === lastNarratedPoiRef.current && status !== "paused") {
+            return
+        }
+
+        // If we're already showing this POI, do nothing
+        if (activePoi && nearbyPoi.id === activePoi.id) {
+            return
+        }
+
+        // If we're narrating something else, show notification for the new POI
+        if (isNarrating || activePoi) {
+            setPendingPoi(nearbyPoi)
+            return
+        }
+
+        // Otherwise, automatically set the active POI and start narration
+        setActivePoi(nearbyPoi)
+        setStatus("narrating")
+        setIsNarrating(true)
+
+        const localizedDescription = getLocalizedDescription(nearbyPoi)
+
+        speak(localizedDescription, {
+            onEnd: () => {
+                setIsNarrating(false)
+                setStatus("listening")
+            },
+            rate: speechRate,
+        })
+
+        lastNarratedPoiRef.current = nearbyPoi.id
+    }, [nearbyPoi, isEnabled, isAvailable, speak, status, activePoi, isNarrating, speechRate, narrationLanguage])
+
+    const handleToggleNarration = () => {
+        if (isNarrating) {
+            stop()
+            setIsNarrating(false)
+            setStatus("paused")
+        } else if (activePoi) {
+            // Use the localized description for narration
+            const localizedDescription = getLocalizedDescription(activePoi)
+
+            speak(localizedDescription, {
+                onEnd: () => {
+                    setIsNarrating(false)
+                    setStatus("listening")
+                },
+                rate: speechRate,
+            })
+            setIsNarrating(true)
+            setStatus("narrating")
+        }
+    }
+
+    const handleReplayNarration = () => {
+        if (activePoi) {
+            stop()
+
+            // Use the localized description for narration
+            const localizedDescription = getLocalizedDescription(activePoi)
+
+            speak(localizedDescription, {
+                onEnd: () => {
+                    setIsNarrating(false)
+                    setStatus("listening")
+                },
+                rate: speechRate,
+            })
+            setIsNarrating(true)
+            setStatus("narrating")
+        }
+    }
+
+    const handleToggleEnabled = (enabled: boolean) => {
+        setIsEnabled(enabled)
+        if (!enabled) {
+            stop()
+            setStatus("idle")
+        } else {
+            setStatus("listening")
+        }
+    }
+
+    // Function to handle POI selection for demo purposes
+    const handleSelectPoi = (poi: POI) => {
+        // If there's a pending notification, dismiss it
+        setPendingPoi(null)
+
+        // Stop current narration
+        stop()
+        setIsNarrating(false)
+
+        // Set the new active POI
+        setActivePoi(poi)
+        setStatus("listening")
+    }
+
+    // Handle playing a POI from the notification
+    const handlePlayPendingPoi = (poi: POI) => {
+        // Stop current narration
+        stop()
+
+        // Set the new active POI
+        setActivePoi(poi)
+        setPendingPoi(null)
+        setStatus("narrating")
+        setIsNarrating(true)
+
+        // Start narration
+        const localizedDescription = getLocalizedDescription(poi)
+
+        speak(localizedDescription, {
+            onEnd: () => {
+                setIsNarrating(false)
+                setStatus("listening")
+            },
+            rate: speechRate,
+        })
+
+        lastNarratedPoiRef.current = poi.id
+    }
+
+    // Handle dismissing a POI notification
+    const handleDismissPendingPoi = () => {
+        setPendingPoi(null)
+    }
+
+    // Function to simulate moving to a different POI
+    const simulateMoveToPoi = (poiIndex: number) => {
+        const newLocation = simulateLocationChange(location, poiIndex)
+        if (newLocation) {
+            setSimulatedLocation(newLocation)
+
+            toast({
+                title: t("map.simulated"),
+                description: t("map.simulatedDesc", {poi: pois[poiIndex].title}),
+            })
+        }
+    }
+
+    return (
+        <div className="relative flex flex-col h-screen w-full overflow-hidden">
+            <TopBar
+                status={status}
+                settingsMenu={
+
+                    <Drawer>
+                        <DrawerTrigger>
+                            <Menu className="h-5 w-5"/>
+                            <span className="sr-only">Menu</span>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                            <DrawerTitle className="sr-only"></DrawerTitle>
+                            <Settings
+                                isEnabled={isEnabled}
+                                onToggleEnabled={handleToggleEnabled}
+                                voices={voices}
+                                selectedVoice={selectedVoice}
+                                onVoiceChange={onVoiceChange}
+                                speechRate={speechRate}
+                                onSpeechRateChange={onSpeechRateChange}
+                                narrationLanguage={narrationLanguage}
+                            />
+                            <DrawerFooter>
+                                {/*<div className="mt-6 pt-6 border-t">*/}
+                                {/*    <h3 className="font-medium mb-2">Demo: Simulate Location</h3>*/}
+                                {/*    <div className="grid grid-cols-2 gap-2">*/}
+                                {/*        {pois.map((poi, index) => (*/}
+                                {/*            <Button key={poi.id} variant="outline" size="sm"*/}
+                                {/*                    onClick={() => simulateMoveToPoi(index)}>*/}
+                                {/*                Move to {poi.title}*/}
+                                {/*            </Button>*/}
+                                {/*        ))}*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
+                            </DrawerFooter>
+                        </DrawerContent>
+                    </Drawer>
+                }
+            />
+
+            <div className="flex-1 relative">
+                <MapPlaceholder
+                    userLocation={location}
+                    pois={pois}
+                    activePoi={activePoi}
+                    onRecenter={() => {
+                        toast({
+                            title: t("map.centered"),
+                            description: t("map.centeredDesc"),
+                        })
+                    }}
+                    onSelectPoi={handleSelectPoi}
+                />
+
+                <Button
+                    className="absolute bottom-4 right-4 rounded-full shadow-lg z-10"
+                    onClick={() => {
+                        toast({
+                            title: t("map.centered"),
+                            description: t("map.centeredDesc"),
+                        })
+                    }}
+                    size="icon"
+                    aria-label={t("map.centered")}
+                >
+                    <Locate className="h-5 w-5"/>
+                    <span className="sr-only">{t("map.centered")}</span>
+                </Button>
+            </div>
+
+            {/* POI Notification for new nearby POIs */}
+            <POINotification
+                poi={pendingPoi}
+                onPlay={handlePlayPendingPoi}
+                onDismiss={handleDismissPendingPoi}
+                narrationLanguage={narrationLanguage}
+            />
+
+            {/* Always show the narration panel with the active POI or the first POI as fallback */}
+            {activePoi && (
+                <NarrationPanel
+                    poi={activePoi}
+                    isNarrating={isNarrating}
+                    onToggleNarration={handleToggleNarration}
+                    onReplayNarration={handleReplayNarration}
+                    narrationLanguage={narrationLanguage}
+                />
+            )}
+        </div>
+    )
+}

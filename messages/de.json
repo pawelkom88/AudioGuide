@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "AudioGuide",
+    "copyright": "© 2025 AudioGuide"
+  },
+  "status": {
+    "disabled": "Deaktiviert",
+    "listening": "Hören...",
+    "narrating": "Erzählen...",
+    "paused": "Pausiert"
+  },
+  "narration": {
+    "pause": "Erzählung pausieren",
+    "play": "Erzählung abspielen",
+    "replay": "Wiederholen"
+  },
+  "notification": {
+    "newPoi": "Neuer Interessenpunkt",
+    "nearby": "Diese Attraktion ist in der Nähe. Möchten Sie darüber hören?",
+    "play": "Abspielen",
+    "dismiss": "Ablehnen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "narration": {
+      "enable": "Audio-Erzählung aktivieren",
+      "description": "Automatisch Sehenswürdigkeiten beschreiben"
+    },
+    "voice": {
+      "title": "Stimme",
+      "detected": "Erkannte Sprache"
+    },
+    "speechRate": {
+      "title": "Sprechgeschwindigkeit",
+      "slower": "Langsamer",
+      "normal": "Normal",
+      "faster": "Schneller"
+    },
+    "language": {
+      "title": "App-Sprache",
+      "en": "Englisch",
+      "pl": "Polnisch",
+      "de": "Deutsch"
+    }
+  },
+  "map": {
+    "loading": "Karte wird geladen...",
+    "centered": "Karte zentriert",
+    "centeredDesc": "Karte auf Ihren aktuellen Standort zentriert",
+    "simulated": "Standort simuliert",
+    "simulatedDesc": "In die Nähe von {poi} bewegt"
+  },
+  "toast": {
+    "approaching": "Näherung: {poi}",
+    "startingAudio": "Starte Audio-Erzählung..."
+  },
+  "errors": {
+    "location": "Standortfehler",
+    "speech": "Sprachsynthese nicht verfügbar",
+    "speechDesc": "Ihr Browser unterstützt Text-to-Speech nicht oder es ist deaktiviert."
+  }
+}

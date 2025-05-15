@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "AudioPrzewodnik",
+    "copyright": "© 2025 AudioPrzewodnik"
+  },
+  "status": {
+    "disabled": "Wyłączony",
+    "listening": "Nasłuchiwanie...",
+    "narrating": "Narracja...",
+    "paused": "Wstrzymano"
+  },
+  "narration": {
+    "pause": "Wstrzymaj narrację",
+    "play": "Odtwórz narrację",
+    "replay": "Powtórz"
+  },
+  "notification": {
+    "newPoi": "Nowy punkt zainteresowania",
+    "nearby": "Ta atrakcja jest w pobliżu. Czy chcesz o niej posłuchać?",
+    "play": "Odtwórz",
+    "dismiss": "Odrzuć"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "narration": {
+      "enable": "Włącz narrację audio",
+      "description": "Automatycznie opisuj punkty zainteresowania"
+    },
+    "voice": {
+      "title": "Głos",
+      "detected": "Wykryty język"
+    },
+    "speechRate": {
+      "title": "Szybkość mowy",
+      "slower": "Wolniej",
+      "normal": "Normalnie",
+      "faster": "Szybciej"
+    },
+    "language": {
+      "title": "Język aplikacji",
+      "en": "Angielski",
+      "pl": "Polski",
+      "de": "Niemiecki"
+    }
+  },
+  "map": {
+    "loading": "Ładowanie mapy...",
+    "centered": "Mapa wycentrowana",
+    "centeredDesc": "Mapa wycentrowana na Twojej aktualnej lokalizacji",
+    "simulated": "Lokalizacja zasymulowana",
+    "simulatedDesc": "Przesunięto w pobliże {poi}"
+  },
+  "toast": {
+    "approaching": "Zbliżasz się do: {poi}",
+    "startingAudio": "Rozpoczynam narrację audio..."
+  },
+  "errors": {
+    "location": "Błąd lokalizacji",
+    "speech": "Synteza mowy niedostępna",
+    "speechDesc": "Twoja przeglądarka nie obsługuje zamiany tekstu na mowę lub funkcja jest wyłączona."
+  }
+}

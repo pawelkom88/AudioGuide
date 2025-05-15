@@ -1,0 +1,9 @@
+import { AudioGuide } from "@/components/audio-guide"
+
+export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col">
+      <AudioGuide />
+    </main>
+  )
+}

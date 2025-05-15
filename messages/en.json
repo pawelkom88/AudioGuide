@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "AudioGuide",
+    "copyright": "© 2025 AudioGuide"
+  },
+  "status": {
+    "disabled": "Disabled",
+    "listening": "Listening...",
+    "narrating": "Narrating...",
+    "paused": "Paused"
+  },
+  "narration": {
+    "pause": "Pause narration",
+    "play": "Play narration",
+    "replay": "Replay"
+  },
+  "notification": {
+    "newPoi": "New Point of Interest",
+    "nearby": "This attraction is nearby. Would you like to hear about it?",
+    "play": "Play",
+    "dismiss": "Dismiss"
+  },
+  "settings": {
+    "title": "Settings",
+    "narration": {
+      "enable": "Enable Audio Narration",
+      "description": "Automatically narrate points of interest"
+    },
+    "voice": {
+      "title": "Voice",
+      "detected": "Detected language"
+    },
+    "speechRate": {
+      "title": "Speech Rate",
+      "slower": "Slower",
+      "normal": "Normal",
+      "faster": "Faster"
+    },
+    "language": {
+      "title": "App Language",
+      "en": "English",
+      "pl": "Polish",
+      "de": "German"
+    }
+  },
+  "map": {
+    "loading": "Loading map...",
+    "centered": "Map centered",
+    "centeredDesc": "Map centered on your current location",
+    "simulated": "Location simulated",
+    "simulatedDesc": "Moved near {poi}"
+  },
+  "toast": {
+    "approaching": "Approaching: {poi}",
+    "startingAudio": "Starting audio narration..."
+  },
+  "errors": {
+    "location": "Location Error",
+    "speech": "Speech Synthesis Unavailable",
+    "speechDesc": "Your browser doesn't support text-to-speech or it's disabled."
+  }
+}
