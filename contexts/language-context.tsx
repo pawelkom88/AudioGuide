@@ -1,57 +1,59 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import {createContext, useContext, useState, useEffect, type ReactNode} from "react"
 
-type Language = "en" | "pl" | "de"
+export const supportedLanguagesConfig = {
+    en: {value: "en", label: "English"},
+    pl: {value: "pl", label: "Polski"},
+    de: {value: "de", label: "Deutsch"},
+} as const
+
+export type Language = typeof supportedLanguagesConfig[keyof typeof supportedLanguagesConfig]["value"]
 
 interface LanguageContextType {
-  language: Language
-  setLanguage: (language: Language) => void
+    language: Language
+    setLanguage: (language: Language) => void
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en")
+export function LanguageProvider({children}: { children: ReactNode }) {
+    const [language, setLanguage] = useState<Language>(supportedLanguagesConfig.en.value)
+    const supportedLanguages = Object.keys(supportedLanguagesConfig) as Language[]
 
-  useEffect(() => {
-    // Detect browser language on initial load
-    const detectLanguage = () => {
-      const browserLang = navigator.language.split("-")[0]
-      const supportedLanguages: Language[] = ["en", "pl", "de"]
+    useEffect(() => {
+        const detectLanguage = (): Language => {
+            const browserLang = navigator.language.split("-")[0]
 
-      // Check if browser language is supported, otherwise default to English
-      if (supportedLanguages.includes(browserLang as Language)) {
-        return browserLang as Language
-      }
-      return "en"
-    }
+            if (supportedLanguages.includes(browserLang as Language)) {
+                return browserLang as Language
+            }
+            return supportedLanguagesConfig.en.value
+        }
 
-    // Try to get language from localStorage first
-    const savedLanguage = localStorage.getItem("appLanguage") as Language
-    if (savedLanguage && ["en", "pl", "de"].includes(savedLanguage)) {
-      setLanguage(savedLanguage)
-    } else {
-      const detectedLanguage = detectLanguage()
-      setLanguage(detectedLanguage)
-    }
-  }, [])
+        // hook
+        const savedLanguage = localStorage.getItem("appLanguage") as Language
+        if (savedLanguage && supportedLanguages.includes(savedLanguage)) {
+            setLanguage(savedLanguage)
+        } else {
+            setLanguage(detectLanguage())
+        }
+    }, [])
 
-  // Save language preference to localStorage
-  useEffect(() => {
-    localStorage.setItem("appLanguage", language)
+    // Save language preference to localStorage
+    useEffect(() => {
+        // hook
+        localStorage.setItem("appLanguage", language)
+        document.documentElement.lang = language
+    }, [language])
 
-    // Update document language for accessibility
-    document.documentElement.lang = language
-  }, [language])
-
-  return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>
+    return <LanguageContext.Provider value={{language, setLanguage}}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext)
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
-  }
-  return context
+    const context = useContext(LanguageContext)
+    if (context === undefined) {
+        throw new Error("useLanguage must be used within a LanguageProvider")
+    }
+    return context
 }

@@ -2,7 +2,6 @@
 
 import {useState, useEffect, useRef} from "react"
 import {MapPlaceholder} from "@/components/map-placeholder"
-import {TopBar} from "@/components/top-bar"
 import {NarrationPanel} from "@/components/narration-panel"
 import {POINotification} from "@/components/poi-notification"
 import {useGeolocation} from "@/hooks/use-geolocation"
@@ -19,30 +18,38 @@ import {useLanguage} from "@/contexts/language-context"
 import {translate} from "@/utils/translations"
 import {
     Drawer,
-    DrawerClose,
     DrawerContent,
-    DrawerDescription,
     DrawerFooter,
-    DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer"
 // For demo purposes, let's add a function to simulate location changes
-const simulateLocationChange = (currentLocation: { latitude: number; longitude: number } | null, poiIndex: number) => {
-    if (!currentLocation) return null
+// const simulateLocationChange = (currentLocation: { latitude: number; longitude: number } | null, poiIndex: number) => {
+//     if (!currentLocation) return null
+//
+//     // Move closer to the POI with the given index
+//     const targetPoi = samplePOIs[poiIndex]
+//
+//     // Calculate a position 40m away from the POI (within the 50m trigger radius)
+//     const direction = Math.random() * Math.PI * 2 // Random direction
+//     const distance = 0.00036 // Roughly 40 meters in degrees
+//
+//     return {
+//         latitude: targetPoi.latitude + Math.sin(direction) * distance,
+//         longitude: targetPoi.longitude + Math.cos(direction) * distance,
+//         accuracy: 10,
+//     }
+// }
 
-    // Move closer to the POI with the given index
-    const targetPoi = samplePOIs[poiIndex]
 
-    // Calculate a position 40m away from the POI (within the 50m trigger radius)
-    const direction = Math.random() * Math.PI * 2 // Random direction
-    const distance = 0.00036 // Roughly 40 meters in degrees
-
-    return {
-        latitude: targetPoi.latitude + Math.sin(direction) * distance,
-        longitude: targetPoi.longitude + Math.cos(direction) * distance,
-        accuracy: 10,
+// Get the POI description in the correct language
+const getLocalizedDescription = (narrationLanguage: "en" | "pl" | "de", poi: POI) => {
+    if (narrationLanguage === "pl" && poi.translations.pl) {
+        return poi.translations.pl.description
+    } else if (narrationLanguage === "de" && poi.translations.de) {
+        return poi.translations.de.description
     }
+    return poi.description
 }
 
 export function AudioGuide() {
@@ -69,8 +76,8 @@ export function AudioGuide() {
     const location = simulatedLocation || realLocation
 
     const {
-        speak,
-        stop,
+        startNarration,
+        stopNarration,
         voices,
         isAvailable,
         selectedVoice,
@@ -82,15 +89,6 @@ export function AudioGuide() {
 
     const {nearbyPoi} = useProximity(location, pois, 50)
 
-    // Get the POI description in the correct language
-    const getLocalizedDescription = (poi: POI) => {
-        if (narrationLanguage === "pl" && poi.translations.pl) {
-            return poi.translations.pl.description
-        } else if (narrationLanguage === "de" && poi.translations.de) {
-            return poi.translations.de.description
-        }
-        return poi.description
-    }
 
     // Handle location errors
     useEffect(() => {
@@ -141,9 +139,9 @@ export function AudioGuide() {
         setStatus("narrating")
         setIsNarrating(true)
 
-        const localizedDescription = getLocalizedDescription(nearbyPoi)
+        const localizedDescription = getLocalizedDescription(narrationLanguage, nearbyPoi)
 
-        speak(localizedDescription, {
+        startNarration(localizedDescription, {
             onEnd: () => {
                 setIsNarrating(false)
                 setStatus("listening")
@@ -152,18 +150,18 @@ export function AudioGuide() {
         })
 
         lastNarratedPoiRef.current = nearbyPoi.id
-    }, [nearbyPoi, isEnabled, isAvailable, speak, status, activePoi, isNarrating, speechRate, narrationLanguage])
+    }, [nearbyPoi, isEnabled, isAvailable, startNarration, status, activePoi, isNarrating, speechRate, narrationLanguage])
 
     const handleToggleNarration = () => {
         if (isNarrating) {
-            stop()
+            stopNarration()
             setIsNarrating(false)
             setStatus("paused")
         } else if (activePoi) {
             // Use the localized description for narration
-            const localizedDescription = getLocalizedDescription(activePoi)
+            const localizedDescription = getLocalizedDescription(narrationLanguage, activePoi)
 
-            speak(localizedDescription, {
+            startNarration(localizedDescription, {
                 onEnd: () => {
                     setIsNarrating(false)
                     setStatus("listening")
@@ -177,12 +175,12 @@ export function AudioGuide() {
 
     const handleReplayNarration = () => {
         if (activePoi) {
-            stop()
+            stopNarration()
 
             // Use the localized description for narration
-            const localizedDescription = getLocalizedDescription(activePoi)
+            const localizedDescription = getLocalizedDescription(narrationLanguage, activePoi)
 
-            speak(localizedDescription, {
+            startNarration(localizedDescription, {
                 onEnd: () => {
                     setIsNarrating(false)
                     setStatus("listening")
@@ -197,7 +195,7 @@ export function AudioGuide() {
     const handleToggleEnabled = (enabled: boolean) => {
         setIsEnabled(enabled)
         if (!enabled) {
-            stop()
+            stopNarration()
             setStatus("idle")
         } else {
             setStatus("listening")
@@ -210,7 +208,7 @@ export function AudioGuide() {
         setPendingPoi(null)
 
         // Stop current narration
-        stop()
+        stopNarration()
         setIsNarrating(false)
 
         // Set the new active POI
@@ -221,7 +219,7 @@ export function AudioGuide() {
     // Handle playing a POI from the notification
     const handlePlayPendingPoi = (poi: POI) => {
         // Stop current narration
-        stop()
+        stopNarration()
 
         // Set the new active POI
         setActivePoi(poi)
@@ -230,9 +228,9 @@ export function AudioGuide() {
         setIsNarrating(true)
 
         // Start narration
-        const localizedDescription = getLocalizedDescription(poi)
+        const localizedDescription = getLocalizedDescription(narrationLanguage, poi)
 
-        speak(localizedDescription, {
+        startNarration(localizedDescription, {
             onEnd: () => {
                 setIsNarrating(false)
                 setStatus("listening")
@@ -249,55 +247,45 @@ export function AudioGuide() {
     }
 
     // Function to simulate moving to a different POI
-    const simulateMoveToPoi = (poiIndex: number) => {
-        const newLocation = simulateLocationChange(location, poiIndex)
-        if (newLocation) {
-            setSimulatedLocation(newLocation)
-
-            toast({
-                title: t("map.simulated"),
-                description: t("map.simulatedDesc", {poi: pois[poiIndex].title}),
-            })
-        }
-    }
+    // const simulateMoveToPoi = (poiIndex: number) => {
+    //     const newLocation = simulateLocationChange(location, poiIndex)
+    //     if (newLocation) {
+    //         setSimulatedLocation(newLocation)
+    //
+    //         toast({
+    //             title: t("map.simulated"),
+    //             description: t("map.simulatedDesc", {poi: pois[poiIndex].title}),
+    //         })
+    //     }
+    // }
 
     return (
         <div className="relative flex flex-col h-screen w-full overflow-hidden">
             {/*<TopBar*/}
             {/*    status={status}*/}
             {/*    settingsMenu={*/}
-                    <Drawer>
-                        <DrawerTrigger className="h-10 w-10 rounded-full absolute bottom-36 right-4 z-10 bg-primary text-white flex items-center justify-center">
-                            <Menu className="h-5 w-5"/>
-                            <span className="sr-only">Open Setting Menu</span>
-                        </DrawerTrigger>
-                        <DrawerContent>
-                            <DrawerTitle className="sr-only"></DrawerTitle>
-                            <Settings
-                                isEnabled={isEnabled}
-                                onToggleEnabled={handleToggleEnabled}
-                                voices={voices}
-                                selectedVoice={selectedVoice}
-                                onVoiceChange={onVoiceChange}
-                                speechRate={speechRate}
-                                onSpeechRateChange={onSpeechRateChange}
-                                narrationLanguage={narrationLanguage}
-                            />
-                            <DrawerFooter>
-                                {/*<div className="mt-6 pt-6 border-t">*/}
-                                {/*    <h3 className="font-medium mb-2">Demo: Simulate Location</h3>*/}
-                                {/*    <div className="grid grid-cols-2 gap-2">*/}
-                                {/*        {pois.map((poi, index) => (*/}
-                                {/*            <Button key={poi.id} variant="outline" size="sm"*/}
-                                {/*                    onClick={() => simulateMoveToPoi(index)}>*/}
-                                {/*                Move to {poi.title}*/}
-                                {/*            </Button>*/}
-                                {/*        ))}*/}
-                                {/*    </div>*/}
-                                {/*</div>*/}
-                            </DrawerFooter>
-                        </DrawerContent>
-                    </Drawer>
+            <Drawer>
+                <DrawerTrigger
+                    className="h-10 w-10 rounded-full absolute bottom-36 right-4 z-10 bg-primary text-white flex items-center justify-center">
+                    <Menu className="h-5 w-5"/>
+                    <span className="sr-only">Open Setting Menu</span>
+                </DrawerTrigger>
+                <DrawerContent>
+                    <DrawerTitle className="sr-only"></DrawerTitle>
+                    <Settings
+                        isEnabled={isEnabled}
+                        onToggleEnabled={handleToggleEnabled}
+                        voices={voices}
+                        selectedVoice={selectedVoice}
+                        onVoiceChange={onVoiceChange}
+                        speechRate={speechRate}
+                        onSpeechRateChange={onSpeechRateChange}
+                        narrationLanguage={narrationLanguage}
+                    />
+                    <DrawerFooter>
+                    </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
             {/*    }*/}
             {/*/>*/}
 
