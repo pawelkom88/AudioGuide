@@ -23,6 +23,7 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer"
 import {useLanguage} from "@/providers/providers";
+import {POIDetailsDrawer} from "@/components/poi-details-drawer";
 // For demo purposes, let's add a function to simulate location changes
 // const simulateLocationChange = (currentLocation: { latitude: number; longitude: number } | null, poiIndex: number) => {
 //     if (!currentLocation) return null
@@ -80,6 +81,7 @@ export function AudioGuide() {
         onSpeechRateChange,
         narrationLanguage,
     } = useSpeech()
+    const [selectedPoi, setSelectedPoi] = useState(null)
 
     const {nearbyPoi} = useProximity(location, pois, 50)
 
@@ -195,69 +197,9 @@ export function AudioGuide() {
             setStatus("listening")
         }
     }
-
-    // Function to handle POI selection for demo purposes
-    const handleSelectPoi = (poi: POI) => {
-        // If there's a pending notification, dismiss it
-        setPendingPoi(null)
-
-        // Stop current narration
-        stopNarration()
-        setIsNarrating(false)
-
-        // Set the new active POI
-        setActivePoi(poi)
-        setStatus("listening")
-    }
-
-    // Handle playing a POI from the notification
-    const handlePlayPendingPoi = (poi: POI) => {
-        // Stop current narration
-        stopNarration()
-
-        // Set the new active POI
-        setActivePoi(poi)
-        setPendingPoi(null)
-        setStatus("narrating")
-        setIsNarrating(true)
-
-        // Start narration
-        const localizedDescription = getLocalizedDescription(narrationLanguage, poi)
-
-        startNarration(localizedDescription, {
-            onEnd: () => {
-                setIsNarrating(false)
-                setStatus("listening")
-            },
-            rate: speechRate,
-        })
-
-        lastNarratedPoiRef.current = poi.id
-    }
-
-    // Handle dismissing a POI notification
-    const handleDismissPendingPoi = () => {
-        setPendingPoi(null)
-    }
-
-    // Function to simulate moving to a different POI
-    // const simulateMoveToPoi = (poiIndex: number) => {
-    //     const newLocation = simulateLocationChange(location, poiIndex)
-    //     if (newLocation) {
-    //         setSimulatedLocation(newLocation)
-    //
-    //         toast({
-    //             title: t("map.simulated"),
-    //             description: t("map.simulatedDesc", {poi: pois[poiIndex].title}),
-    //         })
-    //     }
-    // }
-
+    console.log("selectedPoi", selectedPoi)
     return (
         <div className="relative flex flex-col h-screen w-full overflow-hidden">
-            {/*<TopBar*/}
-            {/*    status={status}*/}
-            {/*    settingsMenu={*/}
             <Drawer>
                 <DrawerTrigger
                     className="h-10 w-10 rounded-full absolute bottom-[9.8rem] right-4 z-10 bg-primary text-white flex items-center justify-center">
@@ -290,15 +232,15 @@ export function AudioGuide() {
                         lng: -3.179090
                     }}
                     // userLocation={location}
-                    pois={pois}
-                    activePoi={activePoi}
-                    onRecenter={() => {
-                        toast({
-                            title: t("map.centered"),
-                            description: t("map.centeredDesc"),
-                        })
-                    }}
-                    onSelectPoi={handleSelectPoi}
+                    selectedPoi={selectedPoi}
+                    // activePoi={activePoi}
+                    // onRecenter={() => {
+                    //     toast({
+                    //         title: t("map.centered"),
+                    //         description: t("map.centeredDesc"),
+                    //     })
+                    // }}
+                    onSelectPoi={setSelectedPoi}
                 />
 
                 <Button
@@ -318,12 +260,15 @@ export function AudioGuide() {
             </div>
 
             {/* POI Notification for new nearby POIs */}
-            <POINotification
-                poi={pendingPoi}
-                onPlay={handlePlayPendingPoi}
-                onDismiss={handleDismissPendingPoi}
-                narrationLanguage={narrationLanguage}
-            />
+            {/*<POINotification*/}
+            {/*    poi={pendingPoi}*/}
+            {/*    onPlay={handlePlayPendingPoi}*/}
+            {/*    onDismiss={handleDismissPendingPoi}*/}
+            {/*    narrationLanguage={narrationLanguage}*/}
+            {/*/>*/}
+
+            <POIDetailsDrawer poi={selectedPoi} onPlay={setActivePoi} onClose={() => setSelectedPoi(null)}
+                              narrationLanguage={narrationLanguage}/>
 
             {/* Always show the narration panel with the active POI or the first POI as fallback */}
             {activePoi && (
